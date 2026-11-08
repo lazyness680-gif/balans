@@ -13,7 +13,7 @@
 | Аутентификация | JWT (access) в httpOnly-cookie, bcrypt | Изоляция данных по `user_id` |
 | Валидация | Pydantic v2 | Шкалы 1–5 / 1–10, заметка ≤ 500, теги, даты |
 | Frontend | **Jinja2 + ванильный JS/CSS** | Без сборки и Node; графики — собственный SVG |
-| Тесты | pytest + httpx (TestClient) | 41 тест, покрытие критериев приёмки AC-1…AC-22 |
+| Тесты | pytest + httpx (TestClient) | 43 теста, покрытие критериев приёмки AC-1…AC-23 |
 
 Решения из раздела 12 ТЗ: frontend — Jinja2 (вместо React, Node не требуется),
 БД — SQLite с лёгким переключением на PostgreSQL, категории задач — предустановленные.
