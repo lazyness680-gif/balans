@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}История — Баланс{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>История</h1>
+  <p class="muted">Записи настроения и стресса</p>
+</header>
+
+<nav class="segmented" aria-label="Период">
+  {% for p in [7, 30, 90] %}
+  <a href="/history?period={{ p }}" class="{{ 'active' if period == p }}"
+     aria-current="{{ 'page' if period == p }}">{{ p }} дней</a>
+  {% endfor %}
+</nav>
+
+{% if edit_entry %}
+<section class="card" aria-labelledby="edit-title">
+  <h2 id="edit-title">
+    {{ 'Изменение записи от ' if edit_allowed else 'Просмотр записи от ' }}{{ edit_entry.date | ru_date }}
+  </h2>
+
+  {% if edit_allowed %}
+  <form method="post" action="/history/entry" class="form">
+    <input type="hidden" name="action" value="edit">
+    <input type="hidden" name="id" value="{{ edit_entry.id }}">
+
+    <fieldset class="field">
+      <legend>Настроение</legend>
+      <div class="scale" role="radiogroup" aria-label="Настроение, 1–5">
+        {% for value, label in [(1, 'очень плохо'), (2, 'плохо'), (3, 'нормально'), (4, 'хорошо'), (5, 'отлично')] %}
+        <label class="scale-chip" title="{{ value }} — {{ label }}">
+          <input type="radio" name="mood" value="{{ value }}"
+                 aria-label="Настроение {{ value }} — {{ label }}"
+                 {{ 'checked' if edit_entry.mood == value else '' }} required>
+          <span class="scale-value">{{ value }}</span>
+          <span class="scale-label">{{ label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <fieldset class="field">
+      <legend>Стресс</legend>
+      <div class="scale scale-wide" role="radiogroup" aria-label="Стресс, 1–10">
+        {% for value in range(1, 11) %}
+        <label class="scale-chip" title="Стресс {{ value }}/10">
+          <input type="radio" name="stress" value="{{ value }}"
+                 aria-label="Стресс {{ value }} из 10"
+                 {{ 'checked' if edit_entry.stress == value else '' }} required>
+          <span class="scale-value">{{ value }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <div class="field">
+      <label for="edit-note">Заметка</label>
+      <textarea id="edit-note" name="note" rows="3" maxlength="500">{{ edit_entry.note or '' }}</textarea>
+    </div>
+
+    <fieldset class="field">
+      <legend>Теги</legend>
+      <div class="chips">
+        {% for tag in mood_tags %}
+        <label class="chip {{ 'selected' if tag in edit_entry.tags }}">
+          <input type="checkbox" name="tags" value="{{ tag }}" {{ 'checked' if tag in edit_entry.tags else '' }}>
+          <span>{{ tag }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" type="submit">Сохранить</button>
+      <a class="btn btn-ghost" href="/history?period={{ period }}">Отмена</a>
+    </div>
+    <p class="hint">Редактирование доступно в течение 3 дней после даты записи.</p>
+  </form>
+  {% else %}
+  <p class="alert alert-error" role="alert">
+    Запись старше 3 дней — редактирование закрыто, доступен просмотр.
+  </p>
+  <dl class="kv">
+    <dt>Настроение</dt><dd>{{ edit_entry.mood }}/5</dd>
+    <dt>Стресс</dt><dd>{{ edit_entry.stress }}/10</dd>
+    <dt>Заметка</dt><dd>{{ edit_entry.note or '—' }}</dd>
+    <dt>Теги</dt><dd>{{ (edit_entry.tags | join(', ')) if edit_entry.tags else '—' }}</dd>
+  </dl>
+  <p><a class="btn btn-ghost" href="/history?period={{ period }}">К списку</a></p>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if entries %}
+<ul class="entry-list">
+  {% for e in entries %}
+  <li class="card entry-card">
+    <div class="entry-head">
+      <strong>{{ e.date | ru_date }}</strong>
+      <span class="entry-scores">
+        <span class="badge badge-mood mood-{{ e.mood }}" title="Настроение">{{ e.mood }}/5</span>
+        <span class="badge badge-stress" title="Стресс">{{ e.stress }}/10</span>
+      </span>
+    </div>
+    {% if e.note %}<p class="entry-note">{{ e.note }}</p>{% endif %}
+    {% if e.tags %}
+    <div class="chips chips-static">
+      {% for tag in e.tags %}<span class="chip">{{ tag }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    <div class="btn-row">
+      <a class="btn btn-ghost btn-sm" href="/history?period={{ period }}&edit={{ e.id }}">Открыть</a>
+      <form method="post" action="/history/entry" class="inline-form"
+            data-confirm="Удалить запись за {{ e.date | ru_date }}? Это действие необратимо.">
+        <input type="hidden" name="action" value="delete">
+        <input type="hidden" name="id" value="{{ e.id }}">
+        <button class="btn btn-danger btn-sm" type="submit">Удалить</button>
+      </form>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<div class="empty-state" role="status">
+  <p><strong>За выбранный период записей нет.</strong></p>
+  <p class="muted">Отметьте настроение и стресс за сегодня — и здесь появится история.</p>
+  <a class="btn btn-primary" href="/today#entry">Отметить состояние</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Аналитика — Баланс{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Аналитика</h1>
+  <p class="muted">Динамика состояния и выполнения задач за 7, 30 и 90 дней</p>
+</header>
+
+<div class="analytics-controls">
+  <nav class="segmented" id="period-switch" aria-label="Период">
+    {% for p in [7, 30, 90] %}
+    <button type="button" class="period-btn {{ 'active' if p == 7 }}" data-period="{{ p }}"
+            aria-pressed="{{ 'true' if p == 7 }}">{{ p }} дней</button>
+    {% endfor %}
+  </nav>
+
+  <fieldset class="chips" id="tag-filter" aria-label="Фильтр по тегам состояния">
+    <legend class="visually-hidden">Фильтр по тегам</legend>
+    {% for tag in mood_tags %}
+    <label class="chip">
+      <input type="checkbox" value="{{ tag }}">
+      <span>{{ tag }}</span>
+    </label>
+    {% endfor %}
+  </fieldset>
+</div>
+
+<div id="analytics-empty" class="empty-state" hidden role="status">
+  <p><strong>Пока мало данных для графиков.</strong></p>
+  <p class="muted">Нужно от 3 дней с отметками — сделайте первую отметку за сегодня.</p>
+  <a class="btn btn-primary" href="/today#entry">Отметить состояние</a>
+</div>
+
+<section class="card" id="chart-card-1" hidden aria-labelledby="chart1-title">
+  <div class="section-head">
+    <h2 id="chart1-title">Настроение и выполненные задачи</h2>
+    <span class="legend">
+      <span class="legend-item legend-line">настроение (1–5)</span>
+      <span class="legend-item legend-bar">выполнено задач</span>
+    </span>
+  </div>
+  <div class="chart" id="chart-mood" tabindex="0" role="img"
+       aria-label="График 1: линия настроения и столбцы выполненных задач"></div>
+</section>
+
+<section class="card" id="chart-card-2" hidden aria-labelledby="chart2-title">
+  <div class="section-head">
+    <h2 id="chart2-title">Стресс</h2>
+    <span class="legend"><span class="legend-item legend-line legend-stress">стресс (1–10)</span></span>
+  </div>
+  <div class="chart" id="chart-stress" tabindex="0" role="img"
+       aria-label="График 2: линия стресса отдельно"></div>
+</section>
+
+<div id="chart-tooltip" class="tooltip" hidden aria-hidden="true"></div>
+
+<section class="card" aria-labelledby="digest-title">
+  <h2 id="digest-title">Дайджест</h2>
+  <div class="grid-2" id="digest-blocks">
+    <div class="digest" id="digest-week" hidden>
+      <h3>За неделю</h3>
+      <dl class="kv">
+        <dt>Среднее настроение</dt><dd data-k="avg_mood">—</dd>
+        <dt>Средний стресс</dt><dd data-k="avg_stress">—</dd>
+        <dt>Выполнение задач</dt><dd data-k="completion">—</dd>
+        <dt>Дней с отметками</dt><dd data-k="days">—</dd>
+      </dl>
+      <p class="trend" data-k="trend">—</p>
+    </div>
+    <div class="digest" id="digest-month" hidden>
+      <h3>За месяц</h3>
+      <dl class="kv">
+        <dt>Среднее настроение</dt><dd data-k="avg_mood">—</dd>
+        <dt>Средний стресс</dt><dd data-k="avg_stress">—</dd>
+        <dt>Выполнение задач</dt><dd data-k="completion">—</dd>
+        <dt>Дней с отметками</dt><dd data-k="days">—</dd>
+      </dl>
+      <p class="trend" data-k="trend">—</p>
+    </div>
+  </div>
+  <p class="hint" id="digest-insufficient" hidden>Пока мало данных для сравнения — отмечайте состояние регулярно.</p>
+</section>
+
+<p class="muted" id="analytics-error" hidden role="alert"></p>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/charts.js" defer></script>
+<script src="/static/js/analytics.js" defer></script>
+{% endblock %}

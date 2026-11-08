@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ru" data-theme="{{ user.theme if user else 'light' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="«Баланс» — трекер настроения и стресса с рекомендацией по количеству задач на день, историей и графиками.">
+  <title>{% block title %}Баланс{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A//www.w3.org/2000/svg'%20viewBox%3D'0%200%2048%2044'%3E%3Cg%20fill%3D'none'%20stroke%3D'%2346805f'%20stroke-width%3D'2.6'%20stroke-linecap%3D'round'%20opacity%3D'.85'%3E%3Cpath%20d%3D'M24%2013V8'/%3E%3Cpath%20d%3D'M33.8%2016.1%2036.6%2012'/%3E%3Cpath%20d%3D'M14.2%2016.1%2011.4%2012'/%3E%3Cpath%20d%3D'M39.4%2022.8%2043.9%2020.7'/%3E%3Cpath%20d%3D'M8.6%2022.8%204.1%2020.7'/%3E%3C/g%3E%3Cg%20fill%3D'%2346805f'%3E%3Cpath%20d%3D'M24%2036C19%2030%2019%2024%2024%2020C29%2024%2029%2030%2024%2036Z'/%3E%3Cpath%20d%3D'M24%2036C19%2030%2019%2024%2024%2020C29%2024%2029%2030%2024%2036Z'%20transform%3D'rotate(35%2024%2036)'%20opacity%3D'.78'/%3E%3Cpath%20d%3D'M24%2036C19%2030%2019%2024%2024%2020C29%2024%2029%2030%2024%2036Z'%20transform%3D'rotate(-35%2024%2036)'%20opacity%3D'.78'/%3E%3Cpath%20d%3D'M24%2036C19%2030%2019%2024%2024%2020C29%2024%2029%2030%2024%2036Z'%20transform%3D'rotate(70%2024%2036)'%20opacity%3D'.58'/%3E%3Cpath%20d%3D'M24%2036C19%2030%2019%2024%2024%2020C29%2024%2029%2030%2024%2036Z'%20transform%3D'rotate(-70%2024%2036)'%20opacity%3D'.58'/%3E%3C/g%3E%3C/svg%3E">
+  <script>
+    // Тема до первой отрисовки (без «мигания»).
+    // Для вошедшего пользователя источник истины — профиль (сервер рендерит
+    // data-theme сразу); localStorage синхронизируется из него и применяется
+    // только на гостевых страницах — иначе устаревшее значение перекрывает
+    // выбор, сохранённый в настройках.
+    (function () {
+      try {
+        var attr = document.documentElement.getAttribute('data-theme');
+        {% if user %}
+        localStorage.setItem('balans-theme', attr);
+        {% else %}
+        var saved = localStorage.getItem('balans-theme');
+        if (saved === 'dark' || saved === 'light') {
+          document.documentElement.setAttribute('data-theme', saved);
+        }
+        {% endif %}
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+
+  <header class="topbar">
+    <a class="brand" href="/today" aria-label="Баланс — на главную">
+      <svg class="brand-mark" viewBox="0 0 48 44" aria-hidden="true" focusable="false">
+        <g stroke="currentColor" fill="none" stroke-width="2.6" stroke-linecap="round" opacity=".85">
+          <path d="M24 13V8"/>
+          <path d="M33.8 16.1 36.6 12"/>
+          <path d="M14.2 16.1 11.4 12"/>
+          <path d="M39.4 22.8 43.9 20.7"/>
+          <path d="M8.6 22.8 4.1 20.7"/>
+        </g>
+        <g fill="currentColor">
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z"/>
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(35 24 36)" opacity=".78"/>
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(-35 24 36)" opacity=".78"/>
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(70 24 36)" opacity=".58"/>
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(-70 24 36)" opacity=".58"/>
+        </g>
+      </svg>
+      <span class="brand-name">Баланс</span>
+    </a>
+    {% if user %}
+    <div class="topbar-actions">
+      <button type="button" class="icon-btn" id="theme-toggle" aria-label="Переключить тему" title="Светлая/тёмная тема">
+        <span class="theme-icon theme-icon-light" aria-hidden="true">☀️</span>
+        <span class="theme-icon theme-icon-dark" aria-hidden="true">🌙</span>
+      </button>
+      <form method="post" action="/logout" class="inline-form">
+        <button type="submit" class="icon-btn" aria-label="Выйти из аккаунта" title="Выйти">⎋</button>
+      </form>
+    </div>
+    {% endif %}
+  </header>
+
+  {% if user %}
+  <nav class="mainnav" aria-label="Основная навигация">
+    <a href="/today" class="{{ 'active' if path == '/today' }}">Сегодня</a>
+    <a href="/history" class="{{ 'active' if path == '/history' }}">История</a>
+    <a href="/tasks" class="{{ 'active' if path == '/tasks' }}">Задачи</a>
+    <a href="/analytics" class="{{ 'active' if path == '/analytics' }}">Аналитика</a>
+    <a href="/settings" class="{{ 'active' if path == '/settings' }}">Настройки</a>
+  </nav>
+  {% endif %}
+
+  <main id="main" class="container">
+    {% if user and show_reminder %}
+    <aside class="banner" role="status">
+      <div>
+        <strong>Отметьте состояние</strong>
+        <p>Сегодня ещё нет отметки настроения и стресса — без неё рекомендация по нагрузке не считается.</p>
+      </div>
+      <a class="btn btn-primary" href="/today#entry">Отметить состояние</a>
+    </aside>
+    {% endif %}
+
+    {% if error %}
+    <p class="alert alert-error" role="alert">{{ error }}</p>
+    {% endif %}
+    {% if ok %}
+    <p class="alert alert-ok" role="status">{{ ok }}</p>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  {% if user %}
+  <nav class="bottomnav" aria-label="Навигация (мобильная)">
+    <a href="/today" class="{{ 'active' if path == '/today' }}"><span aria-hidden="true">🏠</span>Сегодня</a>
+    <a href="/history" class="{{ 'active' if path == '/history' }}"><span aria-hidden="true">🕘</span>История</a>
+    <a href="/tasks" class="{{ 'active' if path == '/tasks' }}"><span aria-hidden="true">✅</span>Задачи</a>
+    <a href="/analytics" class="{{ 'active' if path == '/analytics' }}"><span aria-hidden="true">📈</span>Аналитика</a>
+    <a href="/settings" class="{{ 'active' if path == '/settings' }}"><span aria-hidden="true">⚙️</span>Ещё</a>
+  </nav>
+  {% endif %}
+
+  <footer class="footer">
+    <p>«Баланс» — ориентир по нагрузке, а не медицинская рекомендация.</p>
+  </footer>
+
+  <script src="/static/js/app.js" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

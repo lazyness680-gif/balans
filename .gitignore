@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Базы данных и секреты
+*.db
+*.sqlite3
+.env
+data/
+
+# Тесты
+.pytest_cache/
+
+# Служебное
+*.log
+.DS_Store
+Thumbs.db
+
+# Локальные документы
+ТЗ.docx

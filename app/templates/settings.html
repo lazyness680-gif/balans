@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Настройки — Баланс{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Настройки</h1>
+  <p class="muted">Профиль: {{ user.email }}</p>
+</header>
+
+<form method="post" action="/settings" class="form card" aria-labelledby="set-title">
+  <h2 id="set-title">Профиль и нагрузка</h2>
+
+  <div class="field">
+    <label for="comfort">Комфортное число задач в день</label>
+    <input id="comfort" name="comfort_limit" type="number" min="1" max="30"
+           value="{{ user.comfort_limit if user.comfort_limit is not none else '' }}"
+           placeholder="например, 4">
+    <p class="hint">Ограничит рекомендацию, даже если состояние позволяет больше.
+       Оставьте пустым — рекомендация будет только по состоянию.</p>
+  </div>
+
+  <fieldset class="field">
+    <legend>Тема оформления</legend>
+    <div class="chips">
+      <label class="chip {{ 'selected' if user.theme == 'light' }}">
+        <input type="radio" name="theme" value="light" {{ 'checked' if user.theme == 'light' }}>
+        <span>светлая</span>
+      </label>
+      <label class="chip {{ 'selected' if user.theme == 'dark' }}">
+        <input type="radio" name="theme" value="dark" {{ 'checked' if user.theme == 'dark' }}>
+        <span>тёмная</span>
+      </label>
+    </div>
+    <p class="hint">Светлая и тёмная темы переключаются и сохраняются в профиле.</p>
+  </fieldset>
+
+  <div class="field">
+    <label for="timezone">Часовой пояс</label>
+    <select id="timezone" name="timezone">
+      {% for tz in timezones %}
+      <option value="{{ tz }}" {{ 'selected' if user.timezone == tz }}>{{ tz }}</option>
+      {% endfor %}
+      {% if user.timezone not in timezones %}
+      <option value="{{ user.timezone }}" selected>{{ user.timezone }}</option>
+      {% endif %}
+    </select>
+    <p class="hint">«Сегодня» и границы записей (7/3 дней) считаются по этому поясу.</p>
+  </div>
+
+  <button class="btn btn-primary btn-block" type="submit">Сохранить настройки</button>
+</form>
+
+<section class="card">
+  <h2>Аккаунт</h2>
+  <div class="btn-row">
+    <form method="post" action="/logout" class="inline-form">
+      <button class="btn btn-ghost" type="submit">Выйти из аккаунта</button>
+    </form>
+  </div>
+</section>
+
+<section class="card">
+  <h2>О рекомендациях</h2>
+  <p class="disclaimer">Это ориентир по нагрузке, а не медицинская рекомендация.</p>
+  <p class="hint">Рекомендации считаются по правилам: сегодняшнее состояние → среднее за 7 дней →
+     процент выполнения → ваш личный лимит. Без ML, без оценивания.</p>
+</section>
+{% endblock %}

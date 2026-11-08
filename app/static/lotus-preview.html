@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Превью логотипа — лотос</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; background: #f4f6f5; color: #16211f; }
+  h2 { font-size: 16px; margin: 24px 0 8px; }
+  .row { display: flex; gap: 28px; align-items: flex-end; flex-wrap: wrap; }
+  .cell { text-align: center; font-size: 12px; color: #5d6b68; }
+  .dark { background: #0e1413; color: #e8eeec; padding: 16px; border-radius: 12px; }
+  .dark .cell { color: #9aa9a6; }
+  .brand { display: flex; align-items: center; gap: 8px; color: #46805f; }
+  .brand-name { font-weight: 700; font-size: 20px; color: inherit; }
+  .dark .brand { color: #7cc2a3; }
+  .hero { text-align: center; color: #46805f; }
+</style>
+</head>
+<body>
+<h2>Шапка (36×33) и крупно</h2>
+<div class="row">
+  <div class="cell">
+    <div class="brand">
+      <svg viewBox="0 0 48 44" width="36" height="33" aria-hidden="true">
+        <g stroke="currentColor" fill="none" stroke-width="2.6" stroke-linecap="round" opacity=".85">
+          <path d="M24 13V8"/>
+          <path d="M33.8 16.1 36.6 12"/>
+          <path d="M14.2 16.1 11.4 12"/>
+          <path d="M39.4 22.8 43.9 20.7"/>
+          <path d="M8.6 22.8 4.1 20.7"/>
+        </g>
+        <g fill="currentColor">
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z"/>
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(35 24 36)" opacity=".78"/>
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(-35 24 36)" opacity=".78"/>
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(70 24 36)" opacity=".58"/>
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(-70 24 36)" opacity=".58"/>
+        </g>
+      </svg>
+      <span class="brand-name">Баланс</span>
+    </div>
+    светлая тема
+  </div>
+  <div class="cell dark">
+    <div class="brand">
+      <svg viewBox="0 0 48 44" width="36" height="33" aria-hidden="true">
+        <g stroke="currentColor" fill="none" stroke-width="2.6" stroke-linecap="round" opacity=".85">
+          <path d="M24 13V8"/>
+          <path d="M33.8 16.1 36.6 12"/>
+          <path d="M14.2 16.1 11.4 12"/>
+          <path d="M39.4 22.8 43.9 20.7"/>
+          <path d="M8.6 22.8 4.1 20.7"/>
+        </g>
+        <g fill="currentColor">
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z"/>
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(35 24 36)" opacity=".78"/>
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(-35 24 36)" opacity=".78"/>
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(70 24 36)" opacity=".58"/>
+          <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(-70 24 36)" opacity=".58"/>
+        </g>
+      </svg>
+      <span class="brand-name">Баланс</span>
+    </div>
+    тёмная тема
+  </div>
+</div>
+
+<h2>Экран входа (92×84)</h2>
+<div class="hero">
+  <svg viewBox="0 0 48 44" width="92" height="84" aria-hidden="true">
+    <g stroke="currentColor" fill="none" stroke-width="2.6" stroke-linecap="round" opacity=".85">
+      <path d="M24 13V8"/>
+      <path d="M33.8 16.1 36.6 12"/>
+      <path d="M14.2 16.1 11.4 12"/>
+      <path d="M39.4 22.8 43.9 20.7"/>
+      <path d="M8.6 22.8 4.1 20.7"/>
+    </g>
+    <g fill="currentColor">
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z"/>
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(35 24 36)" opacity=".78"/>
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(-35 24 36)" opacity=".78"/>
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(70 24 36)" opacity=".58"/>
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(-70 24 36)" opacity=".58"/>
+    </g>
+  </svg>
+</div>
+
+<h2>Фавикон: 32 / 24 / 16 px</h2>
+<div class="row" id="favicons"></div>
+
+<script>
+  const svg = (color) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 44">
+    <g stroke="${color}" fill="none" stroke-width="2.6" stroke-linecap="round" opacity=".85">
+      <path d="M24 13V8"/><path d="M33.8 16.1 36.6 12"/><path d="M14.2 16.1 11.4 12"/>
+      <path d="M39.4 22.8 43.9 20.7"/><path d="M8.6 22.8 4.1 20.7"/>
+    </g>
+    <g fill="${color}">
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z"/>
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(35 24 36)" opacity=".78"/>
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(-35 24 36)" opacity=".78"/>
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(70 24 36)" opacity=".58"/>
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(-70 24 36)" opacity=".58"/>
+    </g></svg>`;
+  const box = document.getElementById('favicons');
+  for (const size of [32, 24, 16]) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.innerHTML = `<div style="width:${size}px;height:${size}px;margin:0 auto 4px">${svg('#46805f')}</div>${size}px`;
+    box.appendChild(cell);
+  }
+</script>
+</body>
+</html>

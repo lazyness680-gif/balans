@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Вход' if mode == 'login' else 'Регистрация' }} — Баланс{% endblock %}
+{% block content %}
+<section class="auth-hero">
+  <svg class="hero-logo" viewBox="0 0 48 44" aria-hidden="true" focusable="false">
+    <g stroke="currentColor" fill="none" stroke-width="2.6" stroke-linecap="round" opacity=".85">
+      <path d="M24 13V8"/>
+      <path d="M33.8 16.1 36.6 12"/>
+      <path d="M14.2 16.1 11.4 12"/>
+      <path d="M39.4 22.8 43.9 20.7"/>
+      <path d="M8.6 22.8 4.1 20.7"/>
+    </g>
+    <g fill="currentColor">
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z"/>
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(35 24 36)" opacity=".78"/>
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(-35 24 36)" opacity=".78"/>
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(70 24 36)" opacity=".58"/>
+      <path d="M24 36C19 30 19 24 24 20C29 24 29 30 24 36Z" transform="rotate(-70 24 36)" opacity=".58"/>
+    </g>
+  </svg>
+  <h1>Баланс</h1>
+  <p class="muted">Настроение, стресс и посильная нагрузка на каждый день.</p>
+</section>
+
+<div class="card auth-card">
+  <div class="tabs" role="tablist" aria-label="Вход или регистрация">
+    <a role="tab" aria-selected="{{ 'true' if mode == 'login' else 'false' }}"
+       class="tab {{ 'active' if mode == 'login' }}" href="/login">Вход</a>
+    <a role="tab" aria-selected="{{ 'true' if mode == 'register' else 'false' }}"
+       class="tab {{ 'active' if mode == 'register' }}" href="/register">Регистрация</a>
+  </div>
+
+  <form method="post" action="{{ '/login' if mode == 'login' else '/register' }}" class="form" novalidate>
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="email" required
+             placeholder="you@example.com" value="{{ request.query_params.get('email', '') }}">
+    </div>
+    <div class="field">
+      <label for="password">Пароль</label>
+      <input id="password" name="password" type="password"
+             autocomplete="{{ 'current-password' if mode == 'login' else 'new-password' }}"
+             minlength="6" required placeholder="Не короче 6 символов">
+      {% if mode == 'register' %}
+      <p class="hint">Подтверждение email не требуется — можно сразу пользоваться.</p>
+      {% endif %}
+    </div>
+    <button class="btn btn-primary btn-block" type="submit">
+      {{ 'Войти' if mode == 'login' else 'Зарегистрироваться' }}
+    </button>
+  </form>
+</div>
+{% endblock %}

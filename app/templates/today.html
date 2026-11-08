@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Сегодня — Баланс{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Сегодня</h1>
+  <p class="page-date">{{ today | ru_date }}</p>
+</header>
+
+{# ---------- Форма отметки состояния (FR-5…FR-11) ---------- #}
+<section class="card" id="entry" aria-labelledby="entry-title">
+  <h2 id="entry-title">{{ 'Отметка за сегодня' if entry else 'Отметьте состояние' }}</h2>
+
+  <form method="post" action="/today/entry" class="form">
+    <fieldset class="field">
+      <legend>Настроение <span class="muted">(обязательно)</span></legend>
+      <div class="scale" role="radiogroup" aria-label="Настроение, 1–5">
+        {% for value, label in [(1, 'очень плохо'), (2, 'плохо'), (3, 'нормально'), (4, 'хорошо'), (5, 'отлично')] %}
+        <label class="scale-chip" title="{{ value }} — {{ label }}">
+          <input type="radio" name="mood" value="{{ value }}"
+                 aria-label="Настроение {{ value }} — {{ label }}"
+                 {{ 'checked' if entry and entry.mood == value else '' }} required>
+          <span class="scale-value">{{ value }}</span>
+          <span class="scale-label">{{ label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <fieldset class="field">
+      <legend>Стресс <span class="muted">(обязательно)</span></legend>
+      <div class="scale scale-wide" role="radiogroup" aria-label="Стресс, 1–10">
+        {% for value in range(1, 11) %}
+        <label class="scale-chip" title="Стресс {{ value }}/10">
+          <input type="radio" name="stress" value="{{ value }}"
+                 aria-label="Стресс {{ value }} из 10"
+                 {{ 'checked' if entry and entry.stress == value else '' }} required>
+          <span class="scale-value">{{ value }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <p class="hint">1 — низкий, 10 — очень высокий.</p>
+    </fieldset>
+
+    <div class="field">
+      <label for="note">Заметка <span class="muted">(необязательно, до 500 символов)</span></label>
+      <textarea id="note" name="note" rows="3" maxlength="500"
+                placeholder="Что повлияло на состояние?">{{ entry.note if entry and entry.note else '' }}</textarea>
+    </div>
+
+    <fieldset class="field">
+      <legend>Теги состояния <span class="muted">(необязательно)</span></legend>
+      <div class="chips">
+        {% for tag in mood_tags %}
+        <label class="chip {{ 'selected' if entry and tag in entry.tags }}">
+          <input type="checkbox" name="tags" value="{{ tag }}"
+                 {{ 'checked' if entry and tag in entry.tags else '' }}>
+          <span>{{ tag }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </fieldset>
+
+    <button class="btn btn-primary btn-block" type="submit">
+      {{ 'Сохранить отметку' if entry else 'Сохранить' }}
+    </button>
+    {% if entry %}
+    <p class="hint">Повторное сохранение обновит сегодняшнюю запись — дубль не появится.</p>
+    {% endif %}
+  </form>
+</section>
+
+{# ---------- Карточка рекомендации / «состояние не отмечено» (п.6.1–6.2) ---------- #}
+<section class="card card-accent" aria-labelledby="rec-title">
+  {% if recommendation.state_missing %}
+    <h2 id="rec-title">Состояние не отмечено</h2>
+    <p>Вы уже запланировали <strong>{{ recommendation.planned_today }}</strong> задач на сегодня.
+       Отметьте настроение и стресс — тогда покажу рекомендацию по нагрузке.</p>
+    {% if recommendation.hint %}
+    <p class="hint">{{ recommendation.hint }}</p>
+    {% endif %}
+    <a class="btn btn-primary" href="/today#entry">Отметить состояние</a>
+  {% else %}
+    <p class="rec-kicker">Рекомендация на сегодня</p>
+    <h2 id="rec-title">{{ recommendation.text }}</h2>
+    <p class="rec-basis">
+      Настроение {{ recommendation.basis.mood_today }}/5 ·
+      стресс {{ recommendation.basis.stress_today }}/10
+      {% if recommendation.basis.completion_rate_7 is not none %} ·
+      выполнено за 7 дней {{ (recommendation.basis.completion_rate_7 * 100) | round | int }}%
+      {% endif %}
+      {% if recommendation.basis.comfort_limit is not none %} ·
+      личный лимит {{ recommendation.basis.comfort_limit }}{% endif %}
+    </p>
+    <p>{{ recommendation.explanation }}</p>
+    {% if recommendation.planned_today > recommendation.max_tasks %}
+    <p class="soft-note" role="status">
+      Уже запланировано {{ recommendation.planned_today }} из {{ recommendation.max_tasks }} —
+      ничего менять не нужно, просто учитывайте нагрузку.
+    </p>
+    {% endif %}
+    <p class="disclaimer">{{ recommendation.disclaimer }}</p>
+  {% endif %}
+</section>
+
+{# ---------- Задачи на сегодня (FR-13…FR-18) ---------- #}
+<section class="card" aria-labelledby="tasks-title">
+  <div class="section-head">
+    <h2 id="tasks-title">Задачи на сегодня</h2>
+    <span class="badge">{{ completed_today }}/{{ tasks | length }} выполнено</span>
+  </div>
+
+  {% if tasks %}
+  <ul class="task-list">
+    {% for task in tasks %}
+    <li class="task-row {{ 'done' if task.status == 'done' }}">
+      <form method="post" action="/tasks/{{ task.id }}/toggle" class="inline-form">
+        <input type="hidden" name="next" value="/today">
+        <button type="submit" class="check-btn"
+                aria-label="{{ 'Отменить выполнение' if task.status == 'done' else 'Отметить выполненной' }}: {{ task.title }}"
+                {{ 'aria-pressed=true' if task.status == 'done' }}>✓</button>
+      </form>
+      <span class="task-title">{{ task.title }}</span>
+      <span class="task-meta">
+        <span class="badge badge-{{ task.priority | replace(' ', '-') }}">{{ task.priority }}</span>
+        <span class="badge">{{ task.category }}</span>
+        {% if task.status == 'cancelled' %}<span class="badge badge-muted">отменена</span>{% endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">На сегодня задач нет. Добавьте первую ниже.</p>
+  {% endif %}
+
+  <form method="post" action="/today/task" class="quick-add">
+    <label class="visually-hidden" for="quick-title">Название задачи</label>
+    <input id="quick-title" name="title" type="text" maxlength="300" placeholder="Новая задача…" required>
+    <label class="visually-hidden" for="quick-priority">Приоритет</label>
+    <select id="quick-priority" name="priority">
+      {% for p in task_priorities %}<option value="{{ p }}" {{ 'selected' if p == 'средний' }}>{{ p }}</option>{% endfor %}
+    </select>
+    <label class="visually-hidden" for="quick-category">Категория</label>
+    <select id="quick-category" name="category">
+      {% for c in task_categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-primary" type="submit">Добавить</button>
+  </form>
+  <p class="hint"><a href="/tasks">Все задачи и фильтры →</a></p>
+</section>
+{% endblock %}

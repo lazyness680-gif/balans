@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Задачи — Баланс{% endblock %}
+{% block content %}
+<header class="page-head">
+  <h1>Задачи</h1>
+  <p class="muted">Фильтры по статусу и категории</p>
+</header>
+
+<form method="get" action="/tasks" class="filters" aria-label="Фильтры задач">
+  <div class="field field-inline">
+    <label for="f-status">Статус</label>
+    <select id="f-status" name="status">
+      <option value="">все</option>
+      {% for key, label in status_labels.items() %}
+      <option value="{{ key }}" {{ 'selected' if filter_status == key }}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field field-inline">
+    <label for="f-category">Категория</label>
+    <select id="f-category" name="category">
+      <option value="">все</option>
+      {% for c in task_categories %}
+      <option value="{{ c }}" {{ 'selected' if filter_category == c }}>{{ c }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn btn-ghost" type="submit">Применить</button>
+  {% if filter_status or filter_category %}
+  <a class="btn btn-ghost" href="/tasks">Сбросить</a>
+  {% endif %}
+</form>
+
+{% if edit_task %}
+<section class="card" aria-labelledby="task-edit-title">
+  <h2 id="task-edit-title">Изменение задачи</h2>
+  <form method="post" action="/tasks/task" class="form">
+    <input type="hidden" name="action" value="edit">
+    <input type="hidden" name="id" value="{{ edit_task.id }}">
+    <div class="field">
+      <label for="e-title">Название</label>
+      <input id="e-title" name="title" type="text" maxlength="300" required value="{{ edit_task.title }}">
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label for="e-planned">Дата планирования</label>
+        <input id="e-planned" name="planned_date" type="date" required
+               value="{{ edit_task.planned_date.isoformat() }}">
+      </div>
+      <div class="field">
+        <label for="e-deadline">Дедлайн</label>
+        <input id="e-deadline" name="deadline" type="date"
+               value="{{ edit_task.deadline.isoformat() if edit_task.deadline else '' }}">
+      </div>
+      <div class="field">
+        <label for="e-priority">Приоритет</label>
+        <select id="e-priority" name="priority">
+          {% for p in task_priorities %}
+          <option value="{{ p }}" {{ 'selected' if edit_task.priority == p }}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="e-category">Категория</label>
+        <select id="e-category" name="category">
+          {% for c in task_categories %}
+          <option value="{{ c }}" {{ 'selected' if edit_task.category == c }}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" type="submit">Сохранить</button>
+      <a class="btn btn-ghost" href="/tasks">Отмена</a>
+    </div>
+  </form>
+</section>
+{% endif %}
+
+<section class="card" aria-labelledby="new-task-title">
+  <h2 id="new-task-title">Новая задача</h2>
+  <form method="post" action="/tasks" class="form">
+    <div class="field">
+      <label for="n-title">Название</label>
+      <input id="n-title" name="title" type="text" maxlength="300" required placeholder="Что нужно сделать?">
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label for="n-planned">Дата планирования</label>
+        <input id="n-planned" name="planned_date" type="date" required value="{{ today.isoformat() }}">
+      </div>
+      <div class="field">
+        <label for="n-deadline">Дедлайн <span class="muted">(необязательно)</span></label>
+        <input id="n-deadline" name="deadline" type="date">
+      </div>
+      <div class="field">
+        <label for="n-priority">Приоритет</label>
+        <select id="n-priority" name="priority">
+          {% for p in task_priorities %}<option value="{{ p }}" {{ 'selected' if p == 'средний' }}>{{ p }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="n-category">Категория</label>
+        <select id="n-category" name="category">
+          {% for c in task_categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" type="submit">Добавить задачу</button>
+  </form>
+</section>
+
+<section class="card" aria-labelledby="list-title">
+  <div class="section-head">
+    <h2 id="list-title">Список задач</h2>
+    <span class="badge">{{ tasks | length }}</span>
+  </div>
+
+  {% if tasks %}
+  <ul class="task-list task-list-full">
+    {% for task in tasks %}
+    <li class="task-row {{ 'done' if task.status == 'done' }}">
+      <form method="post" action="/tasks/{{ task.id }}/toggle" class="inline-form">
+        <input type="hidden" name="next" value="/tasks?status={{ filter_status }}&category={{ filter_category }}">
+        <button type="submit" class="check-btn"
+                aria-label="{{ 'Отменить выполнение' if task.status == 'done' else 'Отметить выполненной' }}: {{ task.title }}"
+                {{ 'aria-pressed=true' if task.status == 'done' }}>✓</button>
+      </form>
+      <div class="task-body">
+        <span class="task-title">{{ task.title }}</span>
+        <span class="task-sub">
+          📅 {{ task.planned_date | ru_date }}
+          {% if task.deadline %} · дедлайн: {{ task.deadline | ru_date }}{% endif %}
+        </span>
+      </div>
+      <span class="task-meta">
+        <span class="badge badge-{{ task.priority }}">{{ task.priority }}</span>
+        <span class="badge">{{ task.category }}</span>
+        <span class="badge badge-{{ task.status }}">{{ status_labels[task.status] }}</span>
+      </span>
+      <span class="task-actions">
+        <a class="btn btn-ghost btn-sm" href="/tasks?edit={{ task.id }}{{ '&status=' ~ filter_status if filter_status }}{{ '&category=' ~ filter_category if filter_category }}">Изменить</a>
+        <form method="post" action="/tasks/task" class="inline-form"
+              data-confirm="Удалить задачу «{{ task.title }}»?">
+          <input type="hidden" name="action" value="delete">
+          <input type="hidden" name="id" value="{{ task.id }}">
+          <button class="btn btn-danger btn-sm" type="submit">Удалить</button>
+        </form>
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state" role="status">
+    <p><strong>Задач по фильтру не найдено.</strong></p>
+    <p class="muted">Измените фильтр или добавьте новую задачу.</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
